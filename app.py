@@ -3,6 +3,8 @@ import os
 import tempfile
 import base64
 from generate_mom import generate_mom
+from generate_mom_reportlab import MOMReportLab
+
 
 st.set_page_config(page_title="MOM Generator", layout="wide")
 
@@ -16,10 +18,12 @@ with col_left:
     uploaded_file = st.file_uploader("Upload MOM JSON data", type=["json"])
     
     format_options = {
+        "PDF (ReportLab)": "reportlab",
         "PDF (Typst)": "typst",
         "PDF (LaTeX)": "pdf",
         "Word (DOCX)": "docx"
     }
+
     selected_format_label = st.radio("Output Format", list(format_options.keys()))
     output_format = format_options[selected_format_label]
     
@@ -36,9 +40,22 @@ with col_right:
         try:
             with st.spinner(f"Generating {selected_format_label}..."):
                 # Map internal format to file extension
-                ext = "pdf" if output_format in ["pdf", "typst"] else "docx"
+                ext = "pdf" if output_format in ["pdf", "typst", "reportlab"] else "docx"
                 output_filename = tempfile.mktemp(suffix="." + ext)
-                result = generate_mom(tmp_path, output_format, output_filename)
+                
+                if output_format == "reportlab":
+                    mom = MOMReportLab(tmp_path, output_filename)
+                    mom.create_pdf()
+                    # Mock a result object for compatibility with existing check
+                    class MockResult:
+                        def __init__(self, returncode):
+                            self.returncode = returncode
+                            self.stdout = ""
+                            self.stderr = ""
+                    result = MockResult(0)
+                else:
+                    result = generate_mom(tmp_path, output_format, output_filename)
+
             
             if result.returncode == 0 and os.path.exists(output_filename):
                 st.success(f"Generated {selected_format_label} successfully!")
