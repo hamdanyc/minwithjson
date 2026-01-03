@@ -1,0 +1,502 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\author{}
+\date{}
+\begin{document}
+
+
+\begin{center}
+\includegraphics[width=\textwidth]{logo.png}
+
+\Large **MINIT MESYUARAT AGONG TAHUNAN**
+
+\large Siri 25/2025 pada 23/11/2025
+\end{center}
+
+\subsubsection{HADIR}\label{hadir}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Name
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Designation
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Lt Jen Dato' Sri Abdul Aziz bin Ibrahim, (Bersara) & Presiden \\
+Laksma Mohamad Imran bin Abd Hamid, TLDM, (Bersara) & Timbalan
+Presiden \\
+Brig Jen Dato' Adnan bin Ali, (Bersara) & Naib Presiden, Darat \\
+Lt Kdr Phua Hean Sim, TLDM, (Bersara) & Naib Presiden, Laut \\
+Mej Jen Dato' Zaharin bin Ahmad, TUDM, (Bersara) & Naib Presiden,
+Udara \\
+Lt Kol Abdullah Khir bin Mohd Saidi, TUDM, (Bersara) & Bendahari
+Kehormat \\
+Kol Mohd Kamal bin Omar, (Bersara) & AJK Darat \\
+Lt Kol Dzulkarnain bin Abdullah, (Bersara) & AJK Darat \\
+Kdr Syed Salim bin Syed Osman, TLDM, (Bersara) & AJK Laut \\
+Lt Kol Hj Mior Mohamad Zubir bin Mior Yahya, TUDM, (Bersara) & AJK
+Laut \\
+Mej Jen Dato' Hj Mohd Hassan bin Loman (Bersara) & AJK Udara \\
+Lt Kol Ramli bin Kinta (Bersara) & AJK Terbuka \\
+Lt Kol Mohd Yusof bin Abd Razak (Bersara) & AJK Terbuka \\
+Kol Hamdan bin Yaccob (Bersara) & AJK Terbuka \\
+Lt Kol Hashimah bt Hj. Hassan TUDM, (Bersara) & Lembaga Rayuan/TM \\
+Mej Noh bin Atan @ Khamis (Bersara) & Setiausaha Kehormat \\
+\end{longtable}
+
+\subsubsection{TIDAK HADIR (DENGAN MAAF)}\label{tidak-hadir-dengan-maaf}
+
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Name & Designation \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Lt Kdr Hj. Yusalie bin Yushak TLDM, (Bersara) & AJK Darat \\
+Kapt Asmah bt Abdul Kadir (Bersara) & AJK Terbuka \\
+Mej Amir Ahmad bin Abd Majid, (Bersara) & Pemeriksa Kira-Kira \\
+Kept Tajudin bin Hj Yahya, TLDM, (Bersara) & Pemeriksa Kira-Kira \\
+Mej Harbans Kaur ap Chanan Singh (Bersara) & Lembaga Rayuan \\
+Mej Ismail bin Malik, TUDM, (Bersara) & AJK Udara \\
+\end{longtable}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{AGENDA 1: UCAPAN PEMBUKAAN OLEH
+PRESIDEN}\label{agenda-1-ucapan-pembukaan-oleh-presiden}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Dato Sri Presiden mengalu-alukan kehadiran semua dengan ucapan terima
+  dan memohon semua Ahli EXCO meng hadiahkan Al Fatehah kepada
+  Allahyarham mantan Presiden RAFOC Jen Tan Sri Abdul Rahman Abdul
+  Hamid. Secara ringkasnya Dato Sri Presiden mengingatkan semua Ahli
+  EXCO untuk sama-sama mengangkat RAFOC ke tahap yang akan boleh
+  dibanggakan oleh kalangan Pegawai-Pegawai Veteran. Keutamaan RAFOC
+  adalah untuk menilai perkara-perkara berikut:\\
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\tightlist
+\item
+  Kedudukan pejabat RAFOC. Presiden berharap DMHL masih mempunyai
+  pertalian yang rapat dengan kepimpinan semasa untuk meneroka peluang
+  mendapat bangunan untuk RAFOC beroperasi.\\
+\item
+  Peka dan keterlibatan dengan isu-isu yang berkaitan dengan veteran.
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  \textbf{Keputusan:} Makluman.
+\end{enumerate}
+
+\subsubsection{AGENDA 2: ``MENGESAHKAN MINIT MESYUARAT EXCO RAFOC SIRI
+01/2021 PADA 9 NOV
+2021.}\label{agenda-2-mengesahkan-minit-mesyuarat-exco-rafoc-siri-012021-pada-9-nov-2021.}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\item
+  Minit Mesyuarat Siri 01/2020 bertarikh 9 Nov 2021 diluluskan oleh LMI
+  dan disokong oleh LCYR tanpa sebarang pindaan.
+\item
+  \textbf{Keputusan:} Makluman.
+\end{enumerate}
+
+\subsubsection{AGENDA 3: MENGESAHKAN KOMPOSISI BARISAN EXCO BAGI PENGGAL
+PERTAMA (TAHUN 2022 -
+2023)}\label{agenda-3-mengesahkan-komposisi-barisan-exco-bagi-penggal-pertama-tahun-2022---2023}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{4}
+\item
+  Senarai sepertimana maklumat kehadiran pada mukasurat 1 minit ini
+  adalah barisan EXCO bagi penggal pertama (2022 -- 2023). Kecuali
+  Pemeriksa Kira-Kira Kehormat (Perlantikan satu (1) tahun dan boleh
+  dilantik semula pada tahun-tahun berikutnya).
+\item
+  \textbf{Keputusan:} Makluman.
+\end{enumerate}
+
+\subsubsection{AGENDA 4: PERLAKSANAAN SERAH AMBIL ALIH SETIAUSAHA
+KEHORMAT (SUK) DAN BENDAHARI KEHORMAT
+(BK)}\label{agenda-4-perlaksanaan-serah-ambil-alih-setiausaha-kehormat-suk-dan-bendahari-kehormat-bk}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{6}
+\tightlist
+\item
+  Dokumentasi serah ambil alih kedua-dua portfolio SUK \& BK telah
+  dilaksanakan, kecuali pertukaran penanda tangan EXCO-EXCO yang baharu
+  belum dimajukan ke bank kerana memerlukan dokumen-dokumen kuasa
+  pertukaran (Pengesahan Minit Mesyuarat yang meluluskan
+  perjawatan-perjawatan yang baru dengan penandatangan-penandatangan
+  yang baru perlu di majukan mengikut borang/proforma bank yang
+  terkini.\\
+  Mesyuarat telah meluluskan penanda tangan keatas cek-cek RAFOC untuk
+  perbelanjaan-perbelanjaan berikut:\\
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\tightlist
+\item
+  Semua pembayaran melaui cek / pindahan bank / atau cara-cara
+  perbankan-perbankan lain hanya boleh ditanda tangani oleh Ahli-Ahli
+  EXCO berikut:\\
+\item
+  Bendahari Kehormat dan Presiden atau\\
+\item
+  Bendahari Kehormat dan Timbalan Presiden atau\\
+\item
+  Bendahari Kehormat dan Setiausaha Kehormat
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  \textbf{Keputusan:} BK perlu segerakan urusan-urusan dokumentasi
+  perbankan dengan bantuan SUK.
+\end{enumerate}
+
+\subsubsection{AGENDA 5: KEDUDUKAN KEWANGAN RAFOC BERAKHIR 28 FEB
+2022}\label{agenda-5-kedudukan-kewangan-rafoc-berakhir-28-feb-2022}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{8}
+\item
+  Aliran Tunai bagi tempuh berakhir 28 Feb 2022. Rujuk kembaran A.
+\item
+  \textbf{Keputusan:} Makluman.
+\end{enumerate}
+
+\subsubsection{AGENDA 6: SEMAKAN KEDUDUKAN TUNAI DALAM
+BANK}\label{agenda-6-semakan-kedudukan-tunai-dalam-bank}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{10}
+\item
+  SUK memberi penerangan berkenaan mengakses akaun semasa RAFOC melalui
+  internet. \textgreater{} Akses internet \textgreater{} Laman web
+  BizChannel@CIMB \textgreater{} Coy ID, key-in: B180220, \textgreater{}
+  User ID: RAFOC02, it will furnish secure word: Veteran, click yes
+  \textgreater\textgreater{} enter user PW: Wwg201097 and an OTP will be
+  sent to your HP for keying in on the requested screen (HP must 1st be
+  registered with the bank). It's for the purpose of accounts
+  monitoring, checking of transactions \& monthly Bank Statement in a
+  timely manner {[}realtime{]}).
+\item
+  \textbf{Keputusan:} Makluman.
+\end{enumerate}
+
+\subsubsection{AGENDA 7: MENGAKTIFKAN DAN MELANTIK PIMPINAN BIRO-BIRO
+RAFOC MENGIKUT PERUNTUKAN
+PERLEMBAGAAN}\label{agenda-7-mengaktifkan-dan-melantik-pimpinan-biro-biro-rafoc-mengikut-peruntukan-perlembagaan}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{12}
+\item
+  Biro Pampasan \& Kesejahteraan (Compensation \& Wellness). Dipimpin
+  oleh Dato Adnan.
+\item
+  Biro Pertahanan \& Strategik (Defence \& Strategic). Dipimpin oleh
+  Dato Zaharin.
+\item
+  Biro Keahlian \& Sumber (Membership and Resources). Semua Naib
+  Presiden Darat, Udara \& Laut perlu mencari inisiatif untuk mengorak
+  perancangan yang sewajarnya.
+\item
+  Sukan \& Rekreasi. KRK. Rancangan aktiviti golf selepas raya.Lt Kdr
+  Yusalie akan membantu KRK dalam pengurusan acara-acara golf.
+\item
+  Penjanaan Dana. Diterajui oleh Timbalan Presiden.
+\item
+  Acara peringatan \& sosial (Etika majlis-majlis \& tingkah laku/Etika
+  Whatsapp. Dipimpin oleh Dato' Zaharin. JK Kecil Majlis Raya RAFOC yang
+  disyorkan pada 28 May 2022.
+\item
+  Majlis makan malam 2022. Dato Hassan dengan dibantu oleh Lt Kol Mior
+  Zubir sebagai Setiausaha.
+\item
+  Admin kepada FB RAFOC. KHY.
+\item
+  Jawatankuasa Media. Dianggotai oleh Kol Hamdan, Lt Kol Dzul, Lt Kol
+  Yusuf \& SUK.
+\item
+  \textbf{Keputusan:} Makluman.
+\end{enumerate}
+
+\subsubsection{AGENDA 8: PEJABAT RASMI RAFOC \& STAF PEMBANTU
+PENTADBIRAN \&
+AKAUN}\label{agenda-8-pejabat-rasmi-rafoc-staf-pembantu-pentadbiran-akaun}
+
+Alamat. 10 A, Tingkat 10, Wisma Pahlawan, Jalan Sultan Sulaiman, 50000
+Kuala Lumpur. Staf Pembantu Pentadbiran \& Akaun. Memohon Sdr Lokman bin
+Mohamad Satir, dilantik secara tetap semula mulai 1 April 2022. Untuk
+makluman RAFOC telah menggunakan khidmat beliau secara ``Need basis''
+sejak persiapan AGM dan tugas-tugas mengemaskini maklumat ahli-ahli
+dalam Daftar Ahli RAFOC seperti yang dikehendaki oleh JHEV melalui
+sistem maklumat JHEV.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{22}
+\tightlist
+\item
+  \textbf{Keputusan:} Buat masa ini kekal sebagai pejabat pentadbiran
+  RAFOC. Mesyuarat sebulat suara bersetuju melantik Sdr Lokman sebagai
+  staf yang dibayar elaun bulanan RM1,500.00 dengan caruman SOCSO (Ikut
+  SOP SOCSO) dan diberi elaun telefon bimbit sebagai talian am pejabat
+  RAFOC.
+\end{enumerate}
+
+\subsubsection{AGENDA 9: TAKWIM MESYUARAT 2022 --
+2023}\label{agenda-9-takwim-mesyuarat-2022-2023}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{23}
+\item
+  Takwim mesyuarat 2022 -- 2023. Merujuk kepada klausa 19 b.
+  Perlembagaan RAFOC, Satu (1) mesyuarat EXCO sekurang-kurangnya setiap
+  tiga (3) bulan dalam satu (1) tahun kalender perlu diadakan, atau atas
+  penerimaan oleh SUK daripada tidak kurang daripada lapan (8) Ahli EXCO
+  yang memohon secara bertulis kepada SUK.
+\item
+  \textbf{Keputusan:} Mesyuarat memutuskan untuk mengadakan
+  mesyuarat-mesyuarat EXCO pada bulan ketiga setiap penggal (1 penggal
+  -- 3 bulan), dan memilih hari selasa terakhir pada bulan berkenaan
+  sebagai tarikh Mesyuarat EXCO seperti berikut:\\
+\end{enumerate}
+
+\begin{enumerate}
+\def\labelenumi{\alph{enumi}.}
+\tightlist
+\item
+  Mesyuarat EXCO 2022 \& AGM 2022\\
+  (1). 15 Mar 2022\\
+  (2). 22 Jun 2022\\
+  (3). 27 Sep 2022\\
+  (4). 27 Dis 2022\\
+  (5). AGM: 19 Feb 23\\
+\item
+  Mesyuarat EXCO 2023 \& AGM 2023\\
+  (1). 28 Mar 2022\\
+  (2). 27 Jun 2022\\
+  (3). 26 Sep 2022\\
+  (4). 26 Dis 2022\\
+  (5). AGM: Feb 23
+\end{enumerate}
+
+\subsubsection{AGENDA 10: HAL-HAL LAIN}\label{agenda-10-hal-hal-lain}
+
+Penasihat Undang-undang. RAFOC akan menghubungi Mej Jen Dato Che Hasni
+untuk dapat persetujuan. Kunjungan hormat. RAFOC akan menulis kepada
+senarai berikut untuk merancang membuat kunjungan hormat kepada:\\
+1.1 Raja Perlis\\
+1.2 Sultan Kedah\\
+1.3 Menteri Pertahanan\\
+1.4 Timbalan Menteri Pertahanan\\
+1.5 PAT\\
+1.6 Chief Circle
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsubsection{PENUTUP}\label{penutup}
+
+Penutup. Pengerusi mengucapkan terima kasih kepada semua yang hadir dan
+mengharapkan semua barisan EXCO dapat menyumbang dengan sebaik mungkin
+untuk memacu RAFOC ke tahap yang boleh dibanggakan oleh warga Veteran.
+
+\textbf{Disediakan Oleh:}\\
+Mej Noh bin Atan (B)
+
+\textbf{Diluluskan Oleh:}\\
+\ldots\ldots\ldots\ldots\ldots\ldots..
+
+
+
+
+\end{document}
