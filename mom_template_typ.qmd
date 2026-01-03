@@ -1,0 +1,238 @@
+---
+format:
+  typst:
+    margin:
+      top: 30mm
+      left: 25mm
+      right: 25mm
+      bottom: 30mm
+---
+
+```{python}
+#| echo: false
+#| output: asis
+import os
+import json
+import re
+
+# Load data
+json_file = os.environ.get('MOM_JSON_FILE', 'minit_exco_1_22.json')
+with open(json_file, 'r') as f:
+    data = json.load(f)
+
+if isinstance(data, list) and len(data) > 0:
+    data = data[0]
+
+# Compute title and metadata
+jenis = data.get("Jenis", "agm")
+if jenis == "exco":
+    title_text = "MINIT MESYUARAT JAWATANKUASA EKSEKUTIF"
+else:
+    title_text = "MINIT MESYUARAT AGUNG TAHUNAN"
+
+siri = data.get("Siri", "N/A")
+tarikh = data.get("Tarikh", "N/A")
+year_part = tarikh.split("/")[-1] if "/" in tarikh else "2025"
+tahun = year_part if len(year_part) == 4 else "20" + year_part
+
+# Typst Header
+print("```{=typst}")
+print(f'#align(center)[')
+print(f'  #image("logo.png", width: 100%)\n')
+print(f'  #text(size: 1.4em, weight: "bold")[{title_text}]\n')
+print(f'  #text(size: 1.2em)[Siri {siri}/{tahun} pada {tarikh}]')
+print(f']')
+print("```")
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+def get_case_insensitive(d, key, default=None):
+    if not isinstance(d, dict):
+        return default
+    for k, v in d.items():
+        if k.lower() == key.lower():
+            return v
+    return default
+
+def format_keterangan(text):
+    if not isinstance(text, str):
+        return text
+    
+    lines = text.split('\n')
+    new_lines = []
+    i = 0
+    in_ajk_table = False
+    while i < len(lines):
+        line = lines[i].strip()
+        if line.startswith('|') and line.endswith('|'):
+            cells = [c.strip() for c in line.split('|')[1:-1]]
+            if len(cells) > 1 and all(c == '' for c in cells[1:]):
+                title = cells[0]
+                if i + 1 < len(lines) and re.match(r'^\|[\s:-]*\|', lines[i+1].strip()):
+                    if i + 2 < len(lines) and lines[i+2].strip().startswith('|'):
+                        # Typst centering for table title
+                        new_lines.append("\n\n```{=typst}")
+                        new_lines.append(f"#align(center)[{title}]")
+                        new_lines.append("```\n\n")
+                        header_row = lines[i+2]
+                        new_lines.append(header_row)
+                        new_lines.append(lines[i+1])
+                        
+                        if "Siri" in header_row and "Nama" in header_row and "Jawatan" in header_row:
+                            in_ajk_table = True
+                        
+                        i += 3
+                        continue
+        
+        if in_ajk_table:
+            if not line.startswith('|'):
+                new_lines.append(': {tbl-colwidths="[10, 65, 25]"}\n\n')
+                in_ajk_table = False
+        
+        new_lines.append(lines[i])
+        i += 1
+    
+    if in_ajk_table:
+        new_lines.append(': {tbl-colwidths="[10, 65, 25]"}\n\n')
+        
+    return '\n'.join(new_lines)
+
+# --- HADIR ---
+print("### HADIR")
+hadir = data.get('Hadir', {})
+if isinstance(hadir, str):
+    print(hadir)
+elif isinstance(hadir, dict):
+    nama_list = get_case_insensitive(hadir, 'nama', [])
+    jawatan_list = get_case_insensitive(hadir, 'jawatan', [])
+    if nama_list:
+        print("| Name | Designation |")
+        print("| --- | --- |")
+        for i in range(len(nama_list)):
+            nama = nama_list[i] if i < len(nama_list) else ""
+            jawatan = jawatan_list[i] if i < len(jawatan_list) else ""
+            print(f"| {nama} | {jawatan} |")
+    else:
+        print("Tiada rekod kehadiran berstruktur.")
+else:
+    print("Tiada maklumat kehadiran.")
+
+# --- TIDAK HADIR ---
+tidak_hadir = get_case_insensitive(data, 'tidak hadir (dengan maaf)', {})
+if tidak_hadir:
+    print("\n### TIDAK HADIR (DENGAN MAAF)")
+    if isinstance(tidak_hadir, str):
+        print(tidak_hadir)
+    elif isinstance(tidak_hadir, dict):
+        t_nama_list = get_case_insensitive(tidak_hadir, 'nama', [])
+        t_jawatan_list = get_case_insensitive(tidak_hadir, 'jawatan', [])
+        if t_nama_list:
+            print("| Name | Designation |")
+            print("| --- | --- |")
+            for i in range(len(t_nama_list)):
+                nama = t_nama_list[i] if i < len(t_nama_list) else ""
+                jawatan = t_jawatan_list[i] if i < len(t_jawatan_list) else ""
+                print(f"| {nama} | {jawatan} |")
+        else:
+            print("Tiada rekod tidak hadir berstruktur.")
+
+print("\n---\n")
+
+# --- AGENDA ---
+agenda_data = data.get('Agenda', {})
+agenda_items = []
+
+if isinstance(agenda_data, dict) and agenda_data:
+    for key in sorted(agenda_data.keys(), key=lambda x: int(x) if x.isdigit() else 999):
+        agenda_items.append(agenda_data[key])
+else:
+    agenda_keys = sorted([k for k in data.keys() if k.startswith('Agenda_')], 
+                        key=lambda x: int(x.split('_')[1]) if x.split('_')[1].isdigit() else 999)
+    for k in agenda_keys:
+        agenda_items.append(data[k])
+
+for i, item in enumerate(agenda_items, 1):
+    perkara = get_case_insensitive(item, 'perkara', '').upper()
+    print(f"### AGENDA {i}: {perkara}")
+    
+    keterangan = get_case_insensitive(item, 'keterangan', '')
+    formatted_keterangan = format_keterangan(keterangan)
+    if isinstance(formatted_keterangan, list):
+        for k in formatted_keterangan:
+            print(f"{k}")
+    else:
+        for block in formatted_keterangan.split('\n\n'):
+            block = block.strip()
+            if not block: continue
+            
+            is_table = block.startswith('|')
+            is_typst_raw = block.startswith('```{=typst}')
+            is_attribute = block.startswith(':')
+            
+            if is_table or is_typst_raw:
+                print(f"\n{block}\n")
+            elif is_attribute:
+                print(f"{block}\n")
+            else:
+                for line in block.split('\n'):
+                    line = line.strip()
+                    if not line: continue
+                    is_level2 = re.match(r'^\([0-9]+\)', line)
+                    is_manual_list = re.match(r'^(\(?[a-z0-9]+\s*[.)]|\*|-|\+)', line, re.IGNORECASE)
+                    
+                    if is_level2:
+                        print(f"        {line}  ") 
+                    elif is_manual_list:
+                        print(f"    {line}  ")     
+                    elif not line.startswith('@.'):
+                        print(f"@.  {line}  ")
+                    else:
+                        print(f"{line}  ")
+    
+    keputusan = get_case_insensitive(item, 'keputusan', '')
+    if keputusan:
+        if isinstance(keputusan, str):
+            for block in keputusan.split('\n\n'):
+                block = block.strip()
+                if not block: continue
+                lines = block.split('\n')
+                first = True
+                for line in lines:
+                    line = line.strip()
+                    if not line: continue
+                    is_level2 = re.match(r'^\([0-9]+\)', line)
+                    is_manual_list = re.match(r'^(\(?[a-z0-9]+\s*[.)]|\*|-|\+)', line, re.IGNORECASE)
+                    if first:
+                        print(f"\n@.    **Keputusan:** {line}  ")
+                        first = False
+                    elif is_level2:
+                        print(f"            {line}  ") 
+                    elif is_manual_list:
+                        print(f"        {line}  ")    
+                    else:
+                        print(f"      {line}  ")
+        else:
+            print(f"\n@.    **Keputusan:** {keputusan}  ")
+    
+    print("\n")
+
+print("\n---\n")
+
+# --- PENUTUP ---
+print(f"### PENUTUP")
+print(data.get('Penutup', ''))
+
+print("\n\n")
+
+# --- SIGNATORIES ---
+disediakan = get_case_insensitive(data, 'disediakan oleh', get_case_insensitive(data, 'disediakan', '....................'))
+diluluskan = get_case_insensitive(data, 'diluluskan oleh', get_case_insensitive(data, 'diluluskan', '....................'))
+
+print(f"**Disediakan Oleh:**  ")
+print(f"{disediakan}  ")
+print(f"\n**Diluluskan Oleh:**  ")
+print(f"{diluluskan}")
+```
