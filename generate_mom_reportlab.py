@@ -7,7 +7,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 from reportlab.lib.units import mm
-from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 def markdown_to_reportlab(text):
     """
@@ -98,7 +98,7 @@ class MOMReportLab:
             fontSize=10,
             leading=12,
             spaceAfter=6,
-            alignment=TA_LEFT
+            alignment=TA_JUSTIFY
         ))
         
         # List indentation styles
@@ -109,7 +109,8 @@ class MOMReportLab:
             leading=12,
             leftIndent=20,
             firstLineIndent=0,
-            spaceAfter=4
+            spaceAfter=4,
+            alignment=TA_JUSTIFY
         ))
         
         self.styles.add(ParagraphStyle(
@@ -119,7 +120,8 @@ class MOMReportLab:
             leading=12,
             leftIndent=40,
             firstLineIndent=0,
-            spaceAfter=4
+            spaceAfter=4,
+            alignment=TA_JUSTIFY
         ))
 
     def create_pdf(self):
