@@ -147,8 +147,12 @@ elif current_stage == 2: # Attendance
                         
                     for _, row in df_csv.iterrows():
                         record = {
+                            "siri": row.get('siri', ''),
                             "nama": row['nama'],
-                            "jawatan": row.get('jawatan', '')
+                            "jawatan": row.get('jawatan', ''),
+                            "kategori": row.get('kategori', ''),
+                            "singkatan": row.get('singkatan', ''),
+                            "portfolio": row.get('portfolio', '')
                         }
                         if row['hadir_bool']:
                             new_hadir.append(record)
@@ -170,7 +174,7 @@ elif current_stage == 2: # Attendance
         st.subheader("Hadir (Present)")
         hadir_df = pd.DataFrame(st.session_state.mom_data["Attendance"]["Hadir"])
         if hadir_df.empty:
-            hadir_df = pd.DataFrame([{"nama": "", "jawatan": ""}])
+            hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "kategori": "", "singkatan": "", "portfolio": ""}])
         
         edited_hadir = st.data_editor(hadir_df, num_rows="dynamic", use_container_width=True, key="hadir_editor")
         st.session_state.mom_data["Attendance"]["Hadir"] = edited_hadir.to_dict('records')
@@ -178,7 +182,7 @@ elif current_stage == 2: # Attendance
     st.subheader("Tidak Hadir (Absent with Excuse)")
     tidak_hadir_df = pd.DataFrame(st.session_state.mom_data["Attendance"]["Tidak Hadir"])
     if tidak_hadir_df.empty:
-        tidak_hadir_df = pd.DataFrame([{"nama": "", "jawatan": "", "sebab": ""}])
+        tidak_hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "kategori": "", "singkatan": "", "portfolio": "", "sebab": ""}])
     
     edited_tidak = st.data_editor(tidak_hadir_df, num_rows="dynamic", use_container_width=True, key="tidak_editor")
     st.session_state.mom_data["Attendance"]["Tidak Hadir"] = edited_tidak.to_dict('records')
