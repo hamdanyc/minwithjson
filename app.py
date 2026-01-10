@@ -140,7 +140,7 @@ elif current_stage == 2: # Attendance
                     # Convert 'hadir' column to boolean if it exists
                     if 'hadir' in df_csv.columns:
                         # Handle various boolean-like values
-                        df_csv['hadir_bool'] = df_csv['hadir'].apply(lambda x: str(x).lower().strip() in ['true', '1', 't', 'yes', 'y', 'hadir'])
+                        df_csv['hadir_bool'] = df_csv['hadir'].apply(lambda x: str(x).lower().strip() in ['true', '1', 't', 'yes', 'ya', 'hadir'])
                     else:
                         # Default all to Hadir if column missing
                         df_csv['hadir_bool'] = True
@@ -150,9 +150,7 @@ elif current_stage == 2: # Attendance
                             "siri": row.get('siri', ''),
                             "nama": row['nama'],
                             "jawatan": row.get('jawatan', ''),
-                            "kategori": row.get('kategori', ''),
-                            "singkatan": row.get('singkatan', ''),
-                            "portfolio": row.get('portfolio', '')
+                            "singkatan": row.get('singkatan', '')
                         }
                         if row['hadir_bool']:
                             new_hadir.append(record)
@@ -174,7 +172,7 @@ elif current_stage == 2: # Attendance
         st.subheader("Hadir (Present)")
         hadir_df = pd.DataFrame(st.session_state.mom_data["Attendance"]["Hadir"])
         if hadir_df.empty:
-            hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "kategori": "", "singkatan": "", "portfolio": ""}])
+            hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "singkatan": ""}])
         
         edited_hadir = st.data_editor(hadir_df, num_rows="dynamic", use_container_width=True, key="hadir_editor")
         st.session_state.mom_data["Attendance"]["Hadir"] = edited_hadir.to_dict('records')
@@ -182,7 +180,7 @@ elif current_stage == 2: # Attendance
     st.subheader("Tidak Hadir (Absent with Excuse)")
     tidak_hadir_df = pd.DataFrame(st.session_state.mom_data["Attendance"]["Tidak Hadir"])
     if tidak_hadir_df.empty:
-        tidak_hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "kategori": "", "singkatan": "", "portfolio": "", "sebab": ""}])
+        tidak_hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "singkatan": "", "sebab": ""}])
     
     edited_tidak = st.data_editor(tidak_hadir_df, num_rows="dynamic", use_container_width=True, key="tidak_editor")
     st.session_state.mom_data["Attendance"]["Tidak Hadir"] = edited_tidak.to_dict('records')
