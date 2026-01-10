@@ -97,7 +97,12 @@ if current_stage == 0: # Initialization
             prev_data = json.load(uploaded_prev)
             if st.button("Ingest Previous Minutes"):
                 st.session_state.mom_data = ingest_previous_mom(prev_data)
+                # Clear editor states to force refresh from new data
+                for k in ["hadir_editor", "tidak_editor", "ma_editor", "nm_editor"]:
+                    if k in st.session_state:
+                         del st.session_state[k]
                 st.success("Previous items ingested into 'Matters Arising'!")
+                st.rerun()
         except Exception as e:
             st.error(f"Error loading JSON: {e}")
 
