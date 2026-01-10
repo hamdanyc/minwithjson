@@ -224,6 +224,13 @@ elif current_stage == 5: # New Matters
     
     edited_nm = st.data_editor(nm_df, num_rows="dynamic", use_container_width=True, key="nm_editor")
     st.session_state.mom_data["NewMatters"] = edited_nm.to_dict('records')
+    
+    st.subheader("Final Remarks")
+    st.session_state.mom_data["Closing"] = st.text_area("Closing Remarks", st.session_state.mom_data.get("Closing", ""))
+    st.session_state.mom_data["Annex"] = st.text_area("Annex (Kembaran) - Paste Markdown Tables", 
+                                                    st.session_state.mom_data.get("Annex", ""),
+                                                    height=200,
+                                                    help="Paste markdown tables that should appear as annexes.")
 
 elif current_stage == 6: # Export
     st.header("Stage 7: Finalize & Generate PDF")
