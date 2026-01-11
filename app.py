@@ -191,17 +191,17 @@ elif current_stage == 3: # Matters Arising
     
     ma_df = pd.DataFrame(st.session_state.mom_data["MattersArising"])
     if ma_df.empty:
-        ma_df = pd.DataFrame([{"item": "", "status": "Ongoing", "outcome": ""}])
+        ma_df = pd.DataFrame([{"Perkara": "", "Keputusan": "Ongoing", "Keterangan": ""}])
     
     # Ensure columns exist
-    for col in ["item", "status", "outcome"]:
+    for col in ["Perkara", "Keputusan", "Keterangan"]:
         if col not in ma_df.columns:
             ma_df[col] = ""
 
     edited_ma = st.data_editor(ma_df, num_rows="dynamic", use_container_width=True, 
                                column_config={
-                                   "status": st.column_config.SelectboxColumn(
-                                       "Status",
+                                   "Keputusan": st.column_config.SelectboxColumn(
+                                       "Keputusan",
                                        options=["Done", "Ongoing", "Pending", "Cancelled"]
                                    )
                                }, key="ma_editor")
@@ -209,12 +209,29 @@ elif current_stage == 3: # Matters Arising
 
 elif current_stage == 4: # Main Agenda
     st.header("Stage 5: Main Agenda Items")
-    st.session_state.mom_data["ChairmanAddress"] = st.text_area("Chairman's Welcome Note", st.session_state.mom_data.get("ChairmanAddress", ""))
-    st.session_state.mom_data["ApprovalOfPrevMinutes"] = st.text_area("Confirmation of Previous Minutes", st.session_state.mom_data.get("ApprovalOfPrevMinutes", ""))
     
+    st.subheader("Chairman's Welcome Note")
+    st.session_state.mom_data["ChairmanAddress"]["Perkara"] = st.text_input("Title (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Perkara", "UCAPAN PEMBUKAAN OLEH PRESIDEN"))
+    st.session_state.mom_data["ChairmanAddress"]["Keterangan"] = st.text_area("Content (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Keterangan", ""))
+    
+    st.divider()
+    st.subheader("Confirmation of Previous Minutes")
+    st.session_state.mom_data["ApprovalOfPrevMinutes"]["Perkara"] = st.text_input("Title (Agenda 2)", st.session_state.mom_data["ApprovalOfPrevMinutes"].get("Perkara", "MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI 3/2024 PADA 23 JUN 2024"))
+    st.session_state.mom_data["ApprovalOfPrevMinutes"]["Keterangan"] = st.text_area("Content (Agenda 2)", st.session_state.mom_data["ApprovalOfPrevMinutes"].get("Keterangan", ""))
+    
+    st.divider()
     st.subheader("Financial & Membership Reports")
-    st.session_state.mom_data["Reports"]["Financial"] = st.text_area("Financial Report", st.session_state.mom_data["Reports"]["Financial"])
-    st.session_state.mom_data["Reports"]["Membership"] = st.text_area("Membership Report", st.session_state.mom_data["Reports"]["Membership"])
+    
+    col_rep1, col_rep2 = st.columns(2)
+    with col_rep1:
+        st.write("**Financial Report**")
+        st.session_state.mom_data["Reports"]["Financial"]["Perkara"] = st.text_input("Title (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Perkara", "LAPORAN KEWANGAN BERAKHIR"))
+        st.session_state.mom_data["Reports"]["Financial"]["Keterangan"] = st.text_area("Content (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Keterangan", ""))
+        
+    with col_rep2:
+        st.write("**Membership Report**")
+        st.session_state.mom_data["Reports"]["Membership"]["Perkara"] = st.text_input("Title (Agenda 5)", st.session_state.mom_data["Reports"]["Membership"].get("Perkara", "LAPORAN KEAHLIAN BERAKHIR"))
+        st.session_state.mom_data["Reports"]["Membership"]["Keterangan"] = st.text_area("Content (Agenda 5)", st.session_state.mom_data["Reports"]["Membership"].get("Keterangan", ""))
 
 elif current_stage == 5: # New Matters
     st.header("Stage 6: New Matters & Decisions")
