@@ -5,7 +5,7 @@ import re
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak, KeepTogether
 from reportlab.lib.units import mm
 from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
 
@@ -120,7 +120,15 @@ class MOMReportLab:
         # Logo
         logo_path = 'logo.png'
         if os.path.exists(logo_path):
-            img = Image(logo_path, width=40*mm, height=40*mm) # Making logo smaller, original was too wide
+            img = Image(logo_path)
+            # Maintain aspect ratio and set to a reasonable width
+            orig_w, orig_h = img.imageWidth, img.imageHeight
+            aspect = orig_h / orig_w
+            
+            target_width = 160*mm 
+            img.drawWidth = target_width
+            img.drawHeight = target_width * aspect
+            
             img.hAlign = 'CENTER'
             story.append(img)
             story.append(Spacer(1, 5))
@@ -246,22 +254,27 @@ class MOMReportLab:
         agenda6 = self.data.get("Agenda_6", {}) # Legacy
         nm = self.data.get("NewMatters", [])
         if nm or agenda6:
-            title = agenda6.get("Perkara", "HAL-HAL LAIN")
+            title = agenda6.get("Perkara", "PERKARA-PERKARA BAHARU DARI AHLI JAWATANKUASA")
             story.append(Paragraph(f"AGENDA 6: {title}", self.styles['MOM_SectionHeader']))
             if nm:
                 for item in nm:
                     num = self.get_next_num()
-                    perkara = item.get("Perkara", item.get("item", ""))
-                    keputusan = item.get("Keputusan", item.get("keputusan", ""))
+                    perkara = item.get("Perkara", "")
+                    keterangan = item.get("Keterangan", "")
+                    keputusan = item.get("Keputusan", "")
                     
-                    # Process keputusan as a numbered paragraph
-                    story.append(Paragraph(f"<b>{num}. {markdown_to_reportlab(perkara)}</b>", self.styles['MOM_Normal']))
+                    # Merge Perkara and Keterangan
+                    if keterangan.strip().startswith('|'):
+                        combined_text = f"<b>{num}. {perkara}</b>.\n{keterangan}"
+                    else:
+                        combined_text = f"<b>{num}. {perkara}</b>. {keterangan}" if keterangan else f"<b>{num}. {perkara}</b>"
+                    
+                    self.add_content_with_tables(story, combined_text)
+                    
                     if keputusan:
                         story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {markdown_to_reportlab(keputusan)}", self.styles['MOM_Normal']))
             elif agenda6:
                 self.add_numbered_paragraphs(story, agenda6.get("Keterangan", ""))
-                
-            story.append(Paragraph(f"{self.get_next_num()}. Keputusan. Makluman.", self.styles['MOM_Normal']))
 
         # Closing
         closing = self.data.get("Closing", self.data.get("Penutup", ""))
@@ -271,24 +284,34 @@ class MOMReportLab:
 
         # Signature Sections
         story.append(Spacer(1, 20))
-        disediakan = self.data.get("Disediakan", "........................................")
-        diluluskan = self.data.get("Diluluskan", "........................................")
         
+        # Prepare signature images
+        prep_sig_path = 'Kol_Hamdan.png'
+        appr_sig_path = 'dsaa_sign.png'
+        
+        def get_sig_img(path):
+            if os.path.exists(path):
+                img = Image(path, width=40*mm, height=20*mm)
+                img.hAlign = 'LEFT'
+                return img
+            return Spacer(1, 20*mm)
+
         sig_data = [
-            [Paragraph(f"Disediakan Oleh:. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", self.styles['MOM_Normal']), ""],
-            [Paragraph(f"<b>{disediakan}</b>", self.styles['MOM_Normal']), ""],
-            ["", ""],
-            ["", ""],
-            [Paragraph(f"Diluluskan Oleh:. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .", self.styles['MOM_Normal']), ""],
-            [Paragraph(f"<b>{diluluskan}</b>", self.styles['MOM_Normal']), ""]
+            [Paragraph("<b>Disediakan Oleh:</b>", self.styles['MOM_Normal']), 
+             Paragraph("<b>Diluluskan Oleh:</b>", self.styles['MOM_Normal'])],
+            [get_sig_img(prep_sig_path), get_sig_img(appr_sig_path)],
+            [Paragraph("Kol Hamdan bin Yaccob (B)", self.styles['MOM_Normal']),
+             Paragraph("Lt Jen Dato' Sri Abdul Aziz bin Ibrahim (B)", self.styles['MOM_Normal'])]
         ]
-        sig_table = Table(sig_data, colWidths=[100*mm, 60*mm])
+        
+        sig_table = Table(sig_data, colWidths=[80*mm, 80*mm])
         sig_table.setStyle(TableStyle([
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 10),
             ('TOPPADDING', (0, 0), (-1, -1), 0),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
         ]))
-        story.append(sig_table)
+        story.append(KeepTogether(sig_table))
 
         # Annex (Kembaran)
         annex_content = self.data.get("Annex", "")

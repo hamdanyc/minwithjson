@@ -202,7 +202,7 @@ elif current_stage == 3: # Matters Arising
                                column_config={
                                    "Keputusan": st.column_config.SelectboxColumn(
                                        "Keputusan",
-                                       options=["Done", "Ongoing", "Pending", "Cancelled"]
+                                       options=["Selesai, dan dikeluarkan dari minit", "Dilanjutkan", "Tangguh", "Batal"]
                                    )
                                }, key="ma_editor")
     st.session_state.mom_data["MattersArising"] = edited_ma.to_dict('records')
@@ -235,11 +235,39 @@ elif current_stage == 4: # Main Agenda
 
 elif current_stage == 5: # New Matters
     st.header("Stage 6: New Matters & Decisions")
-    nm_df = pd.DataFrame(st.session_state.mom_data["NewMatters"])
-    if nm_df.empty:
-        nm_df = pd.DataFrame([{"item": "", "keputusan": ""}])
     
-    edited_nm = st.data_editor(nm_df, num_rows="dynamic", use_container_width=True, key="nm_editor")
+    # 1. Normalize data structure if it has old keys (one-time migration)
+    nm_raw = st.session_state.mom_data.get("NewMatters", [])
+    if nm_raw and isinstance(nm_raw[0], dict) and ("item" in nm_raw[0] or "keputusan" in nm_raw[0]):
+        normalized = []
+        for entry in nm_raw:
+            normalized.append({
+                "Perkara": entry.get("Perkara", entry.get("item", "")),
+                "Keterangan": entry.get("Keterangan", ""),
+                "Keputusan": entry.get("Keputusan", entry.get("keputusan", ""))
+            })
+        st.session_state.mom_data["NewMatters"] = normalized
+        st.rerun()
+
+    # 2. Build DataFrame from stable session state
+    nm_df = pd.DataFrame(st.session_state.mom_data.get("NewMatters", []))
+    if nm_df.empty:
+        nm_df = pd.DataFrame([{"Perkara": "", "Keterangan": "", "Keputusan": ""}])
+    
+    # Ensure all columns exist
+    for col in ["Perkara", "Keterangan", "Keputusan"]:
+        if col not in nm_df.columns:
+            nm_df[col] = ""
+    
+    st.write("Tip: To delete a row, select it using the checkbox on the left and press 'Delete' on your keyboard.")
+    edited_nm = st.data_editor(nm_df, num_rows="dynamic", use_container_width=True, 
+                               column_config={
+                                   "Perkara": st.column_config.TextColumn("Perkara", width="medium"),
+                                   "Keterangan": st.column_config.TextColumn("Keterangan", width="large"),
+                                   "Keputusan": st.column_config.TextColumn("Keputusan", width="medium")
+                               }, key="nm_editor_v2") # Use a new key to reset state
+    
+    # 3. Save back to session state
     st.session_state.mom_data["NewMatters"] = edited_nm.to_dict('records')
     
     st.subheader("Final Remarks")
