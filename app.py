@@ -191,7 +191,7 @@ elif current_stage == 3: # Matters Arising
     
     ma_df = pd.DataFrame(st.session_state.mom_data["MattersArising"])
     if ma_df.empty:
-        ma_df = pd.DataFrame([{"Perkara": "", "Keputusan": "Ongoing", "Keterangan": ""}])
+        ma_df = pd.DataFrame([{"Perkara": "", "Keputusan": "Pelaksanaan", "Keterangan": ""}])
     
     # Ensure columns exist
     for col in ["Perkara", "Keputusan", "Keterangan"]:
@@ -202,7 +202,7 @@ elif current_stage == 3: # Matters Arising
                                column_config={
                                    "Keputusan": st.column_config.SelectboxColumn(
                                        "Keputusan",
-                                       options=["Selesai, dan dikeluarkan dari minit", "Dilanjutkan", "Tangguh", "Batal"]
+                                       options=["Selesai", "Dilanjutkan", "Tangguh", "Batal", "Pelaksanaan"]
                                    )
                                }, key="ma_editor")
     st.session_state.mom_data["MattersArising"] = edited_ma.to_dict('records')

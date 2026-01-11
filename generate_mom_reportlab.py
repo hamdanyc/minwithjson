@@ -252,8 +252,23 @@ class MOMReportLab:
 
         # 6. New Matters / Agenda 6
         agenda6 = self.data.get("Agenda_6", {}) # Legacy
-        nm = self.data.get("NewMatters", [])
-        if nm or agenda6:
+        nm_raw = self.data.get("NewMatters", [])
+        
+        # Filter out empty or placeholder rows
+        nm = []
+        for item in nm_raw:
+            perkara = str(item.get("Perkara", "")).strip()
+            keterangan = str(item.get("Keterangan", "")).strip()
+            keputusan = str(item.get("Keputusan", "")).strip()
+            
+            # If all fields are empty or just "Tiada", it's considered empty
+            is_empty = not (perkara or keterangan or keputusan)
+            is_placeholder = all(val.lower() in ["tiada", "", "none"] for val in [perkara, keterangan, keputusan])
+            
+            if not (is_empty or is_placeholder):
+                nm.append(item)
+
+        if nm or (agenda6 and agenda6.get("Keterangan")):
             title = agenda6.get("Perkara", "PERKARA-PERKARA BAHARU DARIPADA AHLI JAWATANKUASA")
             story.append(Paragraph(f"AGENDA 6: {title}", self.styles['MOM_SectionHeader']))
             if nm:
