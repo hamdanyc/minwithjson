@@ -254,7 +254,7 @@ class MOMReportLab:
         agenda6 = self.data.get("Agenda_6", {}) # Legacy
         nm = self.data.get("NewMatters", [])
         if nm or agenda6:
-            title = agenda6.get("Perkara", "PERKARA-PERKARA BAHARU DARI AHLI JAWATANKUASA")
+            title = agenda6.get("Perkara", "PERKARA-PERKARA BAHARU DARIPADA AHLI JAWATANKUASA")
             story.append(Paragraph(f"AGENDA 6: {title}", self.styles['MOM_SectionHeader']))
             if nm:
                 for item in nm:
