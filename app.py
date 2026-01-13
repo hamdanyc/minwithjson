@@ -5,6 +5,7 @@ import base64
 import pandas as pd
 from mom_logic import initialize_mom_state, ingest_previous_mom, save_mom_to_json
 from generate_mom_reportlab import MOMReportLab
+from llm_helper import generate_chairman_note, generate_closing_remark
 
 st.set_page_config(page_title="MOM Crafter", layout="wide")
 
@@ -234,8 +235,39 @@ elif current_stage == 4: # Main Agenda
     st.header("Stage 5: Main Agenda Items")
     
     st.subheader("Chairman's Welcome Note")
+    
+    # LLM Point-based Input Section
+    with st.expander("✨ Generate Content from Points (LLM)", expanded=True):
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            p1 = st.text_input("Point 1", placeholder="e.g., Mengucapkan salam dan selamat datang")
+            p2 = st.text_input("Point 2", placeholder="e.g., Menghargai kehadiran ahli")
+        with col_p2:
+            p3 = st.text_input("Point 3", placeholder="e.g., Mengharapkan perbincangan yang lancar")
+            p4 = st.text_input("Point 4", placeholder="e.g., Menyentuh tentang kejayaan projek lepas")
+        
+        if st.button("🪄 Generate Paragraph"):
+            # specific input validation
+            if not any([p1.strip(), p2.strip(), p3.strip(), p4.strip()]):
+                st.warning("Please enter at least one point to generate content.")
+            else:
+                with st.spinner("Generating..."):
+                    generated_text = generate_chairman_note([p1, p2, p3, p4])
+                    if generated_text.startswith("Error:"):
+                        st.error(generated_text)
+                    elif not generated_text:
+                        st.error("The LLM returned empty content. Please try again with more detailed points.")
+                    else:
+                        st.session_state.mom_data["ChairmanAddress"]["Keterangan"] = generated_text
+                        # Use a success container that persists? No, rerun clears it.
+                        # We just update and rerun. The user will see the content in the text area.
+                        st.rerun()
+
     c_perkara = st.text_input("Title (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Perkara", "UCAPAN PEMBUKAAN OLEH PRESIDEN"))
     c_keterangan = st.text_area("Content (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Keterangan", ""), height=200)
+
+    # Show success message if content was just generated (heuristic: matches generated text?)
+    # Or just let the user see the content.
     
     st.divider()
     st.subheader("Confirmation of Previous Minutes")
@@ -306,6 +338,31 @@ elif current_stage == 5: # New Matters
         st.success("New Matters updated in session!")
     
     st.subheader("Final Remarks")
+    
+    # LLM Point-based Input for Closing
+    with st.expander("✨ Generate Closing Remarks from Points (LLM)", expanded=True):
+        col_c1, col_c2 = st.columns(2)
+        with col_c1:
+            cp1 = st.text_input("Closing Point 1", placeholder="e.g., Mesyuarat ditangguhkan pada pukul 12.30 tengahari")
+            cp2 = st.text_input("Closing Point 2", placeholder="e.g., Tarikh mesyuarat akan datang akan dimaklumkan")
+        with col_c2:
+            cp3 = st.text_input("Closing Point 3", placeholder="e.g., Pengerusi mengucapkan terima kasih")
+            cp4 = st.text_input("Closing Point 4", placeholder="e.g., Tasbih Kaffarah dan Surah Al-Asr")
+            
+        if st.button("🪄 Generate Closing Remarks"):
+             if not any([cp1.strip(), cp2.strip(), cp3.strip(), cp4.strip()]):
+                st.warning("Please enter at least one point to generate content.")
+             else:
+                with st.spinner("Generating..."):
+                    generated_closing = generate_closing_remark([cp1, cp2, cp3, cp4])
+                    if generated_closing.startswith("Error:"):
+                        st.error(generated_closing)
+                    elif not generated_closing:
+                        st.error("The LLM returned empty content. Please try again.")
+                    else:
+                        st.session_state.mom_data["Closing"] = generated_closing
+                        st.rerun()
+
     st.session_state.mom_data["Closing"] = st.text_area("Closing Remarks", st.session_state.mom_data.get("Closing", ""))
     st.session_state.mom_data["Annex"] = st.text_area("Annex (Kembaran) - Paste Markdown Tables", 
                                                     st.session_state.mom_data.get("Annex", ""),
