@@ -110,14 +110,26 @@ elif current_stage == 1: # Header Info
     st.header("Stage 2: Header Information")
     col1, col2 = st.columns(2)
     with col1:
-        st.session_state.mom_data["Header"]["Title"] = st.text_input("Meeting Title", st.session_state.mom_data["Header"]["Title"])
-        st.session_state.mom_data["Header"]["Siri"] = st.text_input("Serial (Siri)", st.session_state.mom_data["Header"]["Siri"])
-        st.session_state.mom_data["Header"]["Jenis"] = st.selectbox("Meeting Type", ["agm", "exco"], 
-                                                                    index=0 if st.session_state.mom_data["Header"]["Jenis"] == "agm" else 1)
+        title = st.text_input("Meeting Title", st.session_state.mom_data["Header"]["Title"])
+        siri = st.text_input("Serial (Siri)", st.session_state.mom_data["Header"]["Siri"])
+        jenis_map = {"agm": 0, "exco": 1}
+        jenis_idx = jenis_map.get(st.session_state.mom_data["Header"]["Jenis"], 0)
+        jenis = st.selectbox("Meeting Type", ["agm", "exco"], index=jenis_idx)
     with col2:
-        st.session_state.mom_data["Header"]["Tarikh"] = st.text_input("Date (DD/MM/YYYY)", st.session_state.mom_data["Header"]["Tarikh"])
-        st.session_state.mom_data["Header"]["Masa"] = st.text_input("Time", st.session_state.mom_data["Header"]["Masa"])
-        st.session_state.mom_data["Header"]["Tempat"] = st.text_input("Venue", st.session_state.mom_data["Header"]["Tempat"])
+        tarikh = st.text_input("Date (DD/MM/YYYY)", st.session_state.mom_data["Header"]["Tarikh"])
+        masa = st.text_input("Time", st.session_state.mom_data["Header"]["Masa"])
+        tempat = st.text_input("Venue", st.session_state.mom_data["Header"]["Tempat"])
+    
+    if st.button("🔄 Sync Header Info"):
+        st.session_state.mom_data["Header"].update({
+            "Title": title,
+            "Siri": siri,
+            "Jenis": jenis,
+            "Tarikh": tarikh,
+            "Masa": masa,
+            "Tempat": tempat
+        })
+        st.success("Header info updated!")
 
 elif current_stage == 2: # Attendance
     st.header("Stage 3: Attendance Management")
@@ -205,26 +217,30 @@ elif current_stage == 3: # Matters Arising
         if col not in ma_df.columns:
             ma_df[col] = ""
 
+    st.info("Tip: Edit the table below and click 'Sync Matters Arising' to save changes to the session.")
     edited_ma = st.data_editor(ma_df, num_rows="dynamic", use_container_width=True, 
                                column_config={
                                    "Keputusan": st.column_config.SelectboxColumn(
                                        "Keputusan",
                                        options=["Selesai", "Dilanjutkan", "Tangguh", "Batal", "Pelaksanaan"]
                                    )
-                               }, key="ma_editor")
-    st.session_state.mom_data["MattersArising"] = edited_ma.to_dict('records')
+                               }, key="ma_editor_stable")
+    
+    if st.button("🔄 Sync Matters Arising"):
+        st.session_state.mom_data["MattersArising"] = edited_ma.to_dict('records')
+        st.success("Matters Arising updated in session!")
 
 elif current_stage == 4: # Main Agenda
     st.header("Stage 5: Main Agenda Items")
     
     st.subheader("Chairman's Welcome Note")
-    st.session_state.mom_data["ChairmanAddress"]["Perkara"] = st.text_input("Title (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Perkara", "UCAPAN PEMBUKAAN OLEH PRESIDEN"))
-    st.session_state.mom_data["ChairmanAddress"]["Keterangan"] = st.text_area("Content (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Keterangan", ""))
+    c_perkara = st.text_input("Title (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Perkara", "UCAPAN PEMBUKAAN OLEH PRESIDEN"))
+    c_keterangan = st.text_area("Content (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Keterangan", ""), height=200)
     
     st.divider()
     st.subheader("Confirmation of Previous Minutes")
-    st.session_state.mom_data["ApprovalOfPrevMinutes"]["Perkara"] = st.text_input("Title (Agenda 2)", st.session_state.mom_data["ApprovalOfPrevMinutes"].get("Perkara", "MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI 3/2024 PADA 23 JUN 2024"))
-    st.session_state.mom_data["ApprovalOfPrevMinutes"]["Keterangan"] = st.text_area("Content (Agenda 2)", st.session_state.mom_data["ApprovalOfPrevMinutes"].get("Keterangan", ""))
+    a_perkara = st.text_input("Title (Agenda 2)", st.session_state.mom_data["ApprovalOfPrevMinutes"].get("Perkara", "MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI ..."))
+    a_keterangan = st.text_area("Content (Agenda 2)", st.session_state.mom_data["ApprovalOfPrevMinutes"].get("Keterangan", ""), height=100)
     
     st.divider()
     st.subheader("Financial & Membership Reports")
@@ -232,13 +248,24 @@ elif current_stage == 4: # Main Agenda
     col_rep1, col_rep2 = st.columns(2)
     with col_rep1:
         st.write("**Financial Report**")
-        st.session_state.mom_data["Reports"]["Financial"]["Perkara"] = st.text_input("Title (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Perkara", "LAPORAN KEWANGAN BERAKHIR"))
-        st.session_state.mom_data["Reports"]["Financial"]["Keterangan"] = st.text_area("Content (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Keterangan", ""))
+        f_perkara = st.text_input("Title (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Perkara", "LAPORAN KEWANGAN BERAKHIR"))
+        f_keterangan = st.text_area("Content (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Keterangan", ""), height=150)
         
     with col_rep2:
         st.write("**Membership Report**")
-        st.session_state.mom_data["Reports"]["Membership"]["Perkara"] = st.text_input("Title (Agenda 5)", st.session_state.mom_data["Reports"]["Membership"].get("Perkara", "LAPORAN KEAHLIAN BERAKHIR"))
-        st.session_state.mom_data["Reports"]["Membership"]["Keterangan"] = st.text_area("Content (Agenda 5)", st.session_state.mom_data["Reports"]["Membership"].get("Keterangan", ""))
+        m_perkara = st.text_input("Title (Agenda 5)", st.session_state.mom_data["Reports"]["Membership"].get("Perkara", "LAPORAN KEAHLIAN BERAKHIR"))
+        m_keterangan = st.text_area("Content (Agenda 5)", st.session_state.mom_data["Reports"]["Membership"].get("Keterangan", ""), height=150)
+
+    if st.button("🔄 Sync Main Agenda Items"):
+        st.session_state.mom_data["ChairmanAddress"]["Perkara"] = c_perkara
+        st.session_state.mom_data["ChairmanAddress"]["Keterangan"] = c_keterangan
+        st.session_state.mom_data["ApprovalOfPrevMinutes"]["Perkara"] = a_perkara
+        st.session_state.mom_data["ApprovalOfPrevMinutes"]["Keterangan"] = a_keterangan
+        st.session_state.mom_data["Reports"]["Financial"]["Perkara"] = f_perkara
+        st.session_state.mom_data["Reports"]["Financial"]["Keterangan"] = f_keterangan
+        st.session_state.mom_data["Reports"]["Membership"]["Perkara"] = m_perkara
+        st.session_state.mom_data["Reports"]["Membership"]["Keterangan"] = m_keterangan
+        st.success("Main Agenda items updated!")
 
 elif current_stage == 5: # New Matters
     st.header("Stage 6: New Matters & Decisions")
@@ -254,7 +281,6 @@ elif current_stage == 5: # New Matters
                 "Keputusan": entry.get("Keputusan", entry.get("keputusan", ""))
             })
         st.session_state.mom_data["NewMatters"] = normalized
-        st.rerun()
 
     # 2. Build DataFrame from stable session state
     nm_df = pd.DataFrame(st.session_state.mom_data.get("NewMatters", []))
@@ -272,10 +298,12 @@ elif current_stage == 5: # New Matters
                                    "Perkara": st.column_config.TextColumn("Perkara", width="medium"),
                                    "Keterangan": st.column_config.TextColumn("Keterangan", width="large"),
                                    "Keputusan": st.column_config.TextColumn("Keputusan", width="medium")
-                               }, key="nm_editor_v2") # Use a new key to reset state
+                               }, key="nm_editor_stable") 
     
-    # 3. Save back to session state
-    st.session_state.mom_data["NewMatters"] = edited_nm.to_dict('records')
+    # 3. Save back to session state via Sync button
+    if st.button("🔄 Sync New Matters"):
+        st.session_state.mom_data["NewMatters"] = edited_nm.to_dict('records')
+        st.success("New Matters updated in session!")
     
     st.subheader("Final Remarks")
     st.session_state.mom_data["Closing"] = st.text_area("Closing Remarks", st.session_state.mom_data.get("Closing", ""))
