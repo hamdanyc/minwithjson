@@ -120,70 +120,77 @@ elif current_stage == 1: # Header Info
         st.session_state.mom_data["Header"]["Tempat"] = st.text_input("Venue", st.session_state.mom_data["Header"]["Tempat"])
 
 elif current_stage == 2: # Attendance
-    st.header("Stage 3: Attendance")
+    st.header("Stage 3: Attendance Management")
     
-    col_at1, col_at2 = st.columns([2, 1])
-    with col_at2:
-        st.subheader("Bulk Import")
-        uploaded_csv = st.file_uploader("Upload Attendance CSV (nama, jawatan)", type=["csv"], key="csv_at")
-        if uploaded_csv:
-            try:
-                import pandas as pd
-                df_csv = pd.read_csv(uploaded_csv)
-                # Normalize columns to lowercase
-                df_csv.columns = [c.lower() for c in df_csv.columns]
-                if 'nama' in df_csv.columns:
-                    # Map to the format we need
-                    new_hadir = []
-                    new_tidak = []
-                    
-                    # Convert 'hadir' column to boolean if it exists
-                    if 'hadir' in df_csv.columns:
-                        # Handle various boolean-like values
-                        df_csv['hadir_bool'] = df_csv['hadir'].apply(lambda x: str(x).lower().strip() in ['true', '1', 't', 'yes', 'ya', 'hadir'])
-                    else:
-                        # Default all to Hadir if column missing
-                        df_csv['hadir_bool'] = True
-                        
-                    for _, row in df_csv.iterrows():
-                        record = {
-                            "siri": row.get('siri', ''),
-                            "nama": row['nama'],
-                            "jawatan": row.get('jawatan', ''),
-                            "singkatan": row.get('singkatan', '')
-                        }
-                        if row['hadir_bool']:
-                            new_hadir.append(record)
-                        else:
-                            # Add default empty reason for absence
-                            record["sebab"] = ""
-                            new_tidak.append(record)
-                    
-                    if st.button("Append to Attendance Lists"):
-                        st.session_state.mom_data["Attendance"]["Hadir"].extend(new_hadir)
-                        st.session_state.mom_data["Attendance"]["Tidak Hadir"].extend(new_tidak)
-                        st.success(f"Processed CSV: Added {len(new_hadir)} to 'Hadir' and {len(new_tidak)} to 'Tidak Hadir'.")
+    # Load AJK CSV
+    ajk_path = "ajk.csv"
+    if 'ajk_df' not in st.session_state:
+        if os.path.exists(ajk_path):
+            st.session_state.ajk_df = pd.read_csv(ajk_path)
+        else:
+            st.session_state.ajk_df = pd.DataFrame(columns=["Siri", "Nama", "Jawatan", "Kategori", "Singkatan", "Portfolio", "Hadir"])
+
+    st.subheader("Manage AJK List (ajk.csv)")
+    edited_ajk = st.data_editor(
+        st.session_state.ajk_df,
+        num_rows="dynamic",
+        use_container_width=True,
+        column_config={
+            "Hadir": st.column_config.SelectboxColumn(
+                "Hadir",
+                options=["Ya", "Tidak"],
+                help="Attendance Status"
+            )
+        },
+        key="ajk_editor"
+    )
+
+    col_btn1, col_btn2 = st.columns(2)
+    with col_btn1:
+        if st.button("💾 Save Changes to ajk.csv"):
+            edited_ajk.to_csv(ajk_path, index=False)
+            st.session_state.ajk_df = edited_ajk
+            st.success("Successfully saved to ajk.csv!")
+    
+    with col_btn2:
+        if st.button("🔄 Sync with Session Attendance"):
+            # Update session state mom_data based on edited_ajk
+            hadir_list = []
+            tidak_hadir_list = []
+            
+            for _, row in edited_ajk.iterrows():
+                record = {
+                    "siri": str(row.get('Siri', '')),
+                    "nama": str(row.get('Nama', '')),
+                    "jawatan": str(row.get('Jawatan', '')),
+                    "singkatan": str(row.get('Singkatan', ''))
+                }
+                if str(row.get('Hadir', '')).strip() == "Ya":
+                    hadir_list.append(record)
                 else:
-                    st.error("CSV must contain a 'nama' column.")
-            except Exception as e:
-                st.error(f"Error reading CSV: {e}")
+                    record["sebab"] = "" # Default empty reason
+                    tidak_hadir_list.append(record)
+            
+            st.session_state.mom_data["Attendance"]["Hadir"] = hadir_list
+            st.session_state.mom_data["Attendance"]["Tidak Hadir"] = tidak_hadir_list
+            st.success("Session attendance updated!")
 
-    with col_at1:
-        st.subheader("Hadir (Present)")
-        hadir_df = pd.DataFrame(st.session_state.mom_data["Attendance"]["Hadir"])
-        if hadir_df.empty:
-            hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "singkatan": ""}])
-        
-        edited_hadir = st.data_editor(hadir_df, num_rows="dynamic", use_container_width=True, key="hadir_editor")
-        st.session_state.mom_data["Attendance"]["Hadir"] = edited_hadir.to_dict('records')
-
-    st.subheader("Tidak Hadir (Absent with Excuse)")
-    tidak_hadir_df = pd.DataFrame(st.session_state.mom_data["Attendance"]["Tidak Hadir"])
-    if tidak_hadir_df.empty:
-        tidak_hadir_df = pd.DataFrame([{"siri": "", "nama": "", "jawatan": "", "singkatan": "", "sebab": ""}])
+    st.divider()
+    st.subheader("Verification: Attendance Lists")
     
-    edited_tidak = st.data_editor(tidak_hadir_df, num_rows="dynamic", use_container_width=True, key="tidak_editor")
-    st.session_state.mom_data["Attendance"]["Tidak Hadir"] = edited_tidak.to_dict('records')
+    tab_hadir, tab_tidak = st.tabs(["✅ Hadir (Present)", "❌ Tidak Hadir (Absent)"])
+    
+    with tab_hadir:
+        if st.session_state.mom_data["Attendance"]["Hadir"]:
+            st.table(pd.DataFrame(st.session_state.mom_data["Attendance"]["Hadir"])[["nama", "jawatan", "singkatan"]])
+        else:
+            st.info("No attendees recorded.")
+            
+    with tab_tidak:
+        if st.session_state.mom_data["Attendance"]["Tidak Hadir"]:
+            st.table(pd.DataFrame(st.session_state.mom_data["Attendance"]["Tidak Hadir"])[["nama", "jawatan", "singkatan", "sebab"]])
+        else:
+            st.info("No absentees recorded.")
 
 elif current_stage == 3: # Matters Arising
     st.header("Stage 4: Matters Arising")

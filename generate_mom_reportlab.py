@@ -315,7 +315,7 @@ class MOMReportLab:
             [Paragraph("<b>Disediakan Oleh:</b>", self.styles['MOM_Normal']), 
              Paragraph("<b>Diluluskan Oleh:</b>", self.styles['MOM_Normal'])],
             [get_sig_img(prep_sig_path), get_sig_img(appr_sig_path)],
-            [Paragraph("Kol Hamdan bin Yaccob (B)", self.styles['MOM_Normal']),
+            [Paragraph("Mej Tengku Ahmad Nazri bin Tengku Abdul Jalil (B)", self.styles['MOM_Normal']),
              Paragraph("Lt Jen Dato' Sri Abdul Aziz bin Ibrahim (B)", self.styles['MOM_Normal'])]
         ]
         
