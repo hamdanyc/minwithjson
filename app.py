@@ -238,29 +238,29 @@ elif current_stage == 4: # Main Agenda
     
     # LLM Point-based Input Section
     with st.expander("✨ Generate Content from Points (LLM)", expanded=True):
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            p1 = st.text_input("Point 1", placeholder="e.g., Mengucapkan salam dan selamat datang")
-            p2 = st.text_input("Point 2", placeholder="e.g., Menghargai kehadiran ahli")
-        with col_p2:
-            p3 = st.text_input("Point 3", placeholder="e.g., Mengharapkan perbincangan yang lancar")
-            p4 = st.text_input("Point 4", placeholder="e.g., Menyentuh tentang kejayaan projek lepas")
+        points_input = st.text_area(
+            "Points (Markdown List)", 
+            placeholder="- Mengucapkan salam dan selamat datang\n- Menghargai kehadiran ahli\n- Mengharapkan perbincangan yang lancar\n- Menyentuh tentang kejayaan projek lepas",
+            height=150,
+            help="Enter each point on a new line. You can use '-' or just text."
+        )
         
         if st.button("🪄 Generate Paragraph"):
             # specific input validation
-            if not any([p1.strip(), p2.strip(), p3.strip(), p4.strip()]):
+            if not points_input.strip():
                 st.warning("Please enter at least one point to generate content.")
             else:
+                # Parse lines into a list
+                points_list = [line.strip() for line in points_input.split('\n') if line.strip()]
+                
                 with st.spinner("Generating..."):
-                    generated_text = generate_chairman_note([p1, p2, p3, p4])
+                    generated_text = generate_chairman_note(points_list)
                     if generated_text.startswith("Error:"):
                         st.error(generated_text)
                     elif not generated_text:
                         st.error("The LLM returned empty content. Please try again with more detailed points.")
                     else:
                         st.session_state.mom_data["ChairmanAddress"]["Keterangan"] = generated_text
-                        # Use a success container that persists? No, rerun clears it.
-                        # We just update and rerun. The user will see the content in the text area.
                         st.rerun()
 
     c_perkara = st.text_input("Title (Agenda 1)", st.session_state.mom_data["ChairmanAddress"].get("Perkara", "UCAPAN PEMBUKAAN OLEH PRESIDEN"))
@@ -341,20 +341,22 @@ elif current_stage == 5: # New Matters
     
     # LLM Point-based Input for Closing
     with st.expander("✨ Generate Closing Remarks from Points (LLM)", expanded=True):
-        col_c1, col_c2 = st.columns(2)
-        with col_c1:
-            cp1 = st.text_input("Closing Point 1", placeholder="e.g., Mesyuarat ditangguhkan pada pukul 12.30 tengahari")
-            cp2 = st.text_input("Closing Point 2", placeholder="e.g., Tarikh mesyuarat akan datang akan dimaklumkan")
-        with col_c2:
-            cp3 = st.text_input("Closing Point 3", placeholder="e.g., Pengerusi mengucapkan terima kasih")
-            cp4 = st.text_input("Closing Point 4", placeholder="e.g., Tasbih Kaffarah dan Surah Al-Asr")
+        closing_points_input = st.text_area(
+            "Closing Points (Markdown List)",
+            placeholder="- Mesyuarat ditangguhkan pada pukul 12.30 tengahari\n- Tarikh mesyuarat akan datang akan dimaklumkan\n- Pengerusi mengucapkan terima kasih\n- Tasbih Kaffarah dan Surah Al-Asr",
+            height=150,
+            help="Enter each point on a new line."
+        )
             
         if st.button("🪄 Generate Closing Remarks"):
-             if not any([cp1.strip(), cp2.strip(), cp3.strip(), cp4.strip()]):
+             if not closing_points_input.strip():
                 st.warning("Please enter at least one point to generate content.")
              else:
+                # Parse lines into a list
+                closing_points_list = [line.strip() for line in closing_points_input.split('\n') if line.strip()]
+                
                 with st.spinner("Generating..."):
-                    generated_closing = generate_closing_remark([cp1, cp2, cp3, cp4])
+                    generated_closing = generate_closing_remark(closing_points_list)
                     if generated_closing.startswith("Error:"):
                         st.error(generated_closing)
                     elif not generated_closing:
