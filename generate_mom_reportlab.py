@@ -142,7 +142,7 @@ class MOMReportLab:
         masa = str(header.get("Masa", header.get("masa", "N/A"))).upper()
         tempat = str(header.get("Tempat", header.get("tempat", "N/A"))).upper()
         
-        header_text = f"MINIT MESYUARAT {title_type} SIRI {siri} PADA {tarikh} JAM {masa}<br/>DI {tempat}"
+        header_text = f"MINIT MESYUARAT {title_type} SIRI {siri}<br/>PADA {tarikh} JAM {masa}<br/>DI {tempat}"
         story.append(Paragraph(header_text, self.styles['MOM_HeaderBlock']))
         story.append(Spacer(1, 15))
         
