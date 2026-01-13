@@ -219,7 +219,7 @@ class MOMReportLab:
             elif agenda3:
                 self.add_numbered_paragraphs(story, agenda3.get("Keterangan", ""))
                 
-            story.append(Paragraph(f"{self.get_next_num()}. Keputusan. Makluman.", self.styles['MOM_Normal']))
+
 
         # 4. Financial Report / Agenda 4
         rep_data = self.data.get("Reports", {})
