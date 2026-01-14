@@ -5,7 +5,7 @@ import base64
 import pandas as pd
 from mom_logic import initialize_mom_state, ingest_previous_mom, save_mom_to_json
 from generate_mom_reportlab import MOMReportLab
-from llm_helper import generate_chairman_note, generate_closing_remark
+from llm_helper import generate_chairman_note, generate_closing_remark, summarize_financial_report
 
 st.set_page_config(page_title="MOM Crafter", layout="wide")
 
@@ -280,6 +280,20 @@ elif current_stage == 4: # Main Agenda
     col_rep1, col_rep2 = st.columns(2)
     with col_rep1:
         st.write("**Financial Report**")
+        
+        # Financial PDF Upload & Summarize
+        with st.expander("📂 Upload & Summarize Financial PDF", expanded=False):
+            fin_pdf = st.file_uploader("Upload Financial Statement (PDF)", type=["pdf"], key="fin_pdf_uploader")
+            if fin_pdf:
+                if st.button("🪄 Summarize PDF with LLM", key="btn_summ_fin"):
+                    with st.spinner("Analyzing PDF..."):
+                        summary = summarize_financial_report(fin_pdf)
+                        if summary.startswith("Error"):
+                            st.error(summary)
+                        else:
+                            st.session_state.mom_data["Reports"]["Financial"]["Keterangan"] = summary
+                            st.rerun()
+
         f_perkara = st.text_input("Title (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Perkara", "LAPORAN KEWANGAN BERAKHIR"))
         f_keterangan = st.text_area("Content (Agenda 4)", st.session_state.mom_data["Reports"]["Financial"].get("Keterangan", ""), height=150)
         
