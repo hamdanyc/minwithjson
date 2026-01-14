@@ -240,7 +240,7 @@ class MOMReportLab:
                         
                         # Render subsequent paragraphs
                         for extra_part in parts[1:]:
-                             self.add_content_with_tables(story, extra_part, style_name='MOM_Indented')
+                             self.add_content_with_tables(story, f"{self.get_next_num()}. {extra_part}")
                     
                     # Display Keputusan as a numbered paragraph
                     if keputusan:
@@ -327,7 +327,7 @@ class MOMReportLab:
                         
                         # Render subsequent paragraphs
                         for extra_part in parts[1:]:
-                             self.add_content_with_tables(story, extra_part, style_name='MOM_Indented')
+                             self.add_content_with_tables(story, f"{self.get_next_num()}. {extra_part}")
                     
                     if keputusan:
                         story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {markdown_to_reportlab(keputusan)}", self.styles['MOM_Normal']))
