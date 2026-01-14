@@ -211,13 +211,27 @@ class MOMReportLab:
                     keterangan = item.get("Keterangan", "")
                     keputusan = item.get("Keputusan", "")
                     
+
                     # Merge Perkara and Keterangan
-                    if keterangan.strip().startswith('|'):
-                        combined_text = f"<b>{num}. {perkara}</b>.\n{keterangan}"
+                    # Handle Multi-paragraph Keterangan with "@." separator
+                    parts = re.split(r'@\.\s*', keterangan)
+                    parts = [p.strip() for p in parts if p.strip()]
+
+                    if not parts:
+                         combined_text = f"<b>{num}. {perkara}</b>"
+                         self.add_content_with_tables(story, combined_text)
                     else:
-                        combined_text = f"<b>{num}. {perkara}</b>. {keterangan}" if keterangan else f"<b>{num}. {perkara}</b>"
-                    
-                    self.add_content_with_tables(story, combined_text)
+                        first_part = parts[0]
+                        if first_part.strip().startswith('|'):
+                             combined_text = f"<b>{num}. {perkara}</b>.\n{first_part}"
+                        else:
+                             combined_text = f"<b>{num}. {perkara}</b>. {first_part}" if first_part else f"<b>{num}. {perkara}</b>"
+                        
+                        self.add_content_with_tables(story, combined_text)
+                        
+                        # Render subsequent paragraphs
+                        for extra_part in parts[1:]:
+                             self.add_content_with_tables(story, extra_part)
                     
                     # Display Keputusan as a numbered paragraph
                     if keputusan:
@@ -284,13 +298,27 @@ class MOMReportLab:
                     keterangan = item.get("Keterangan", "")
                     keputusan = item.get("Keputusan", "")
                     
+
                     # Merge Perkara and Keterangan
-                    if keterangan.strip().startswith('|'):
-                        combined_text = f"<b>{num}. {perkara}</b>.\n{keterangan}"
+                    # Handle Multi-paragraph Keterangan with "@." separator
+                    parts = re.split(r'@\.\s*', keterangan)
+                    parts = [p.strip() for p in parts if p.strip()]
+
+                    if not parts:
+                         combined_text = f"<b>{num}. {perkara}</b>"
+                         self.add_content_with_tables(story, combined_text)
                     else:
-                        combined_text = f"<b>{num}. {perkara}</b>. {keterangan}" if keterangan else f"<b>{num}. {perkara}</b>"
-                    
-                    self.add_content_with_tables(story, combined_text)
+                        first_part = parts[0]
+                        if first_part.strip().startswith('|'):
+                             combined_text = f"<b>{num}. {perkara}</b>.\n{first_part}"
+                        else:
+                             combined_text = f"<b>{num}. {perkara}</b>. {first_part}" if first_part else f"<b>{num}. {perkara}</b>"
+                        
+                        self.add_content_with_tables(story, combined_text)
+                        
+                        # Render subsequent paragraphs
+                        for extra_part in parts[1:]:
+                             self.add_content_with_tables(story, extra_part)
                     
                     if keputusan:
                         story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {markdown_to_reportlab(keputusan)}", self.styles['MOM_Normal']))
