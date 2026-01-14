@@ -173,9 +173,15 @@ class MOMReportLab:
             title = agenda1_data.get("Perkara", "UCAPAN PEMBUKAAN OLEH PRESIDEN")
             
         if chairman_address:
-            story.append(Paragraph(f"AGENDA 1: {title}", self.styles['MOM_SectionHeader']))
-            self.add_numbered_paragraphs(story, chairman_address)
-            story.append(Paragraph(f"{self.get_next_num()}. Keputusan. Makluman.", self.styles['MOM_Normal']))
+            story.append(PageBreak()) # Force Agenda 1 to start on a new page (Page 2)
+            
+            # Use KeepTogether to ensure title and content stay on the same page
+            agenda1_flowables = []
+            agenda1_flowables.append(Paragraph(f"AGENDA 1: {title}", self.styles['MOM_SectionHeader']))
+            self.add_numbered_paragraphs(agenda1_flowables, chairman_address)
+            agenda1_flowables.append(Paragraph(f"{self.get_next_num()}. Keputusan. Makluman.", self.styles['MOM_Normal']))
+            
+            story.append(KeepTogether(agenda1_flowables))
 
         # 2. Approval of Minutes / Agenda 2
         agenda2_data = self.data.get("ApprovalOfPrevMinutes", {})
@@ -454,6 +460,10 @@ class MOMReportLab:
             names = attendance_list["Nama"]
             # Convert to list of dicts
             attendance_list = [{"nama": n} for n in names]
+        
+        # Handle simple list of strings (if not legacy dict structure)
+        if isinstance(attendance_list, list) and len(attendance_list) > 0 and isinstance(attendance_list[0], str):
+            attendance_list = [{"nama": n} for n in attendance_list]
 
         # Table headers matching example: Nama, Singkatan, Jawatan
         headers = ['Nama', 'Singkatan', 'Jawatan']
@@ -465,6 +475,8 @@ class MOMReportLab:
             
         table_data = [[Paragraph(f"<b>{h}</b>", self.styles['MOM_TableText']) for h in headers]]
         for person in attendance_list:
+            if isinstance(person, str):
+                person = {"nama": person}
             row = [
                 Paragraph(person.get("nama", ""), self.styles['MOM_TableText']),
                 Paragraph(person.get("singkatan", ""), self.styles['MOM_TableText']),
