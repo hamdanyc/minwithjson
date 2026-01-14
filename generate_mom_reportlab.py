@@ -79,6 +79,15 @@ class MOMReportLab:
             fontSize=9,
             leading=11
         ))
+        self.styles.add(ParagraphStyle(
+            name='MOM_Indented',
+            parent=self.styles['Normal'],
+            fontSize=10,
+            leading=12,
+            spaceAfter=6,
+            leftIndent=24, # Increased indentation to align with text after number
+            alignment=TA_JUSTIFY
+        ))
 
     def get_next_num(self):
         self.paragraph_counter += 1
@@ -231,7 +240,7 @@ class MOMReportLab:
                         
                         # Render subsequent paragraphs
                         for extra_part in parts[1:]:
-                             self.add_content_with_tables(story, extra_part)
+                             self.add_content_with_tables(story, extra_part, style_name='MOM_Indented')
                     
                     # Display Keputusan as a numbered paragraph
                     if keputusan:
@@ -318,7 +327,7 @@ class MOMReportLab:
                         
                         # Render subsequent paragraphs
                         for extra_part in parts[1:]:
-                             self.add_content_with_tables(story, extra_part)
+                             self.add_content_with_tables(story, extra_part, style_name='MOM_Indented')
                     
                     if keputusan:
                         story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {markdown_to_reportlab(keputusan)}", self.styles['MOM_Normal']))
@@ -408,7 +417,7 @@ class MOMReportLab:
             else:
                 self.add_content_with_tables(story, f"{self.get_next_num()}. {part}")
 
-    def add_content_with_tables(self, story, text):
+    def add_content_with_tables(self, story, text, style_name='MOM_Normal'):
         lines = text.split('\n')
         current_table = []
         for line in lines:
@@ -419,7 +428,7 @@ class MOMReportLab:
                     self.flush_annex_table(story, current_table)
                     current_table = []
                 if line.strip():
-                    story.append(Paragraph(markdown_to_reportlab(line), self.styles['MOM_Normal']))
+                    story.append(Paragraph(markdown_to_reportlab(line), self.styles[style_name]))
         if current_table:
             self.flush_annex_table(story, current_table)
 
