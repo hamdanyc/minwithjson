@@ -223,7 +223,7 @@ elif current_stage == 3: # Matters Arising
                                column_config={
                                    "Keputusan": st.column_config.SelectboxColumn(
                                        "Keputusan",
-                                       options=["Selesai", "Dilanjutkan", "Tangguh", "Batal", "Pelaksanaan"]
+                                       options=["Selesai", "Dilanjutkan", "Tangguh", "Batal", "Pelaksanaan", "Makluman"]
                                    )
                                }, key="ma_editor_stable")
     
