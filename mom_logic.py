@@ -1,5 +1,14 @@
 import json
 import re
+from datetime import date
+
+def today_str():
+    return date.today().strftime("%d/%m/%Y")
+
+def replace_tarikh_placeholders(s):
+    if not isinstance(s, str):
+        return s
+    return re.sub(r'\(\s*tarikh\s*\)', today_str(), s, flags=re.IGNORECASE)
 
 def initialize_mom_state():
     """Returns a default structure for a new MOM."""
@@ -7,7 +16,7 @@ def initialize_mom_state():
         "Header": {
             "Title": "",
             "Siri": "",
-            "Tarikh": "",
+            "Tarikh": today_str(),
             "Masa": "",
             "Tempat": "",
             "Jenis": "agm" # or 'exco'
@@ -17,11 +26,11 @@ def initialize_mom_state():
             "Tidak Hadir": []
         },
         "ChairmanAddress": {
-            "Perkara": "UCAPAN PEMBUKAAN OLEH PRESIDEN",
+            "Perkara": "UCAPAN PEMBUKAAN OLEH PENGERUSI",
             "Keterangan": ""
         },
         "ApprovalOfPrevMinutes": {
-            "Perkara": "MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI (Siri)/2026 PADA (Tarikh)",
+            "Perkara": replace_tarikh_placeholders("MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI (Siri)/2026 PADA (Tarikh)"), 
             "Keterangan": "[Pencadang] mencadangkan minit diluluskan dan disokong oleh [Penyokong])."
         },
         "MattersArising": [], # List of {Perkara, Keputusan, Keterangan}
@@ -79,10 +88,18 @@ def ingest_previous_mom(json_data):
             new_state["Header"]["Siri"] = siri
     else:
         new_state["Header"]["Siri"] = siri
-    new_state["Header"]["Tarikh"] = header.get("Tarikh", header.get("tarikh", ""))
+
+    tarikh = header.get("Tarikh", header.get("tarikh", ""))
+    if not tarikh or (isinstance(tarikh, str) and tarikh.strip().lower() == "(tarikh)"):
+        tarikh = today_str()
+    new_state["Header"]["Tarikh"] = tarikh
+
     new_state["Header"]["Masa"] = header.get("Masa", header.get("masa", ""))
     new_state["Header"]["Tempat"] = header.get("Tempat", header.get("tempat", ""))
     new_state["Header"]["Jenis"] = header.get("Jenis", header.get("jenis", "agm"))
+
+    # Ensure ApprovalOfPrevMinutes.Perkara uses today's date if placeholder present
+    new_state["ApprovalOfPrevMinutes"]["Perkara"] = replace_tarikh_placeholders(new_state["ApprovalOfPrevMinutes"].get("Perkara", ""))
 
     # Mapping for Agenda items in previous JSON to current state
     agenda1 = json_data.get("Agenda_1", {})
