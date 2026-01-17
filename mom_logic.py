@@ -1,5 +1,4 @@
 import json
-import os
 import re
 
 def initialize_mom_state():
@@ -22,8 +21,8 @@ def initialize_mom_state():
             "Keterangan": ""
         },
         "ApprovalOfPrevMinutes": {
-            "Perkara": "MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI 3/2024 PADA 23 JUN 2024",
-            "Keterangan": "Timbalan Presiden mencadangkan minit diluluskan dan disokong oleh Naib Presiden (Udara)."
+            "Perkara": "MENGESAHKAN MINIT MESYUARAT JAWATANKUASA SIRI (Siri)/2026 PADA (Tarikh)",
+            "Keterangan": "[Pencadang] mencadangkan minit diluluskan dan disokong oleh [Penyokong])."
         },
         "MattersArising": [], # List of {Perkara, Keputusan, Keterangan}
         "Reports": {
@@ -68,7 +67,6 @@ def ingest_previous_mom(json_data):
         return None
 
     # Carry over basic info
-    header_key = find_key(json_data, "Header")
     # Load Header info
     header = json_data.get("Header", json_data)
     new_state["Header"]["Title"] = header.get("Title", header.get("title", ""))
@@ -77,7 +75,7 @@ def ingest_previous_mom(json_data):
         try:
             num, year = siri.split("/")
             new_state["Header"]["Siri"] = f"{int(num)+1}/{year}"
-        except:
+        except Exception:
             new_state["Header"]["Siri"] = siri
     else:
         new_state["Header"]["Siri"] = siri
@@ -230,7 +228,8 @@ def ingest_previous_mom(json_data):
         for ak in ["Agenda_3", "Agenda_6"]:
             if ak in json_data and isinstance(json_data[ak], dict):
                 content = json_data[ak].get("Keterangan", "")
-                if not content: continue
+                if not content:
+                    continue
                 
                 # Split content into segments
                 # Pattern: split by \n followed by list markers or @.
@@ -239,7 +238,8 @@ def ingest_previous_mom(json_data):
                 
                 for seg in segments:
                     seg = seg.strip()
-                    if not seg: continue
+                    if not seg: 
+                        continue
                     # Avoid adding the general header usually found in Agenda 3
                     if "berikut telah dilaksanakan" in seg.lower() and len(seg) < 100:
                         continue
