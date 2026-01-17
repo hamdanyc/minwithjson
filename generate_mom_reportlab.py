@@ -209,31 +209,32 @@ class MOMReportLab:
         # 3. Matters Arising / Agenda 3
         agenda3 = self.data.get("Agenda_3", {}) # Legacy support
         ma = self.data.get("MattersArising", [])
-        if ma or agenda3:
-            title = agenda3.get("Perkara", "PERKARA-PERKARA BERBANGKIT")
-            story.append(Paragraph(f"AGENDA 3: {title}", self.styles['MOM_SectionHeader']))
-            
-            if ma:
-                    num = self.get_next_num()
-                    perkara = item.get("Perkara", "")
-                    keterangan = item.get("Keterangan", "")
-                    keputusan = item.get("Keputusan", "")
-                    
+        
+        title = agenda3.get("Perkara", "PERKARA-PERKARA BERBANGKIT")
+        story.append(Paragraph(f"AGENDA 3: {title}", self.styles['MOM_SectionHeader']))
+        
+        if ma:
+            for item in ma:
+                num = self.get_next_num()
+                perkara = item.get("Perkara", "")
+                keterangan = item.get("Keterangan", "")
+                keputusan = item.get("Keputusan", "")
 
-                    # Unified rendering for multi-paragraph and sub-lists
-                    if keterangan.strip().startswith('|'):
-                         prefix = f"<b>{num}. {perkara}</b>.\n"
-                    else:
-                         prefix = f"<b>{num}. {perkara}</b>. " if perkara else f"<b>{num}. </b>"
-                    
-                    self.render_numbered_content(story, keterangan, first_prefix=prefix)
-                    
-                    # Display Keputusan as a numbered paragraph
-                    if keputusan:
-                        story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {keputusan}", self.styles['MOM_Normal']))
-            elif agenda3:
-                self.add_numbered_paragraphs(story, agenda3.get("Keterangan", ""))
+                # Unified rendering for multi-paragraph and sub-lists
+                if keterangan.strip().startswith('|'):
+                     prefix = f"<b>{num}. {perkara}</b>.\n"
+                else:
+                     prefix = f"<b>{num}. {perkara}</b>. " if perkara else f"<b>{num}. </b>"
                 
+                self.render_numbered_content(story, keterangan, first_prefix=prefix)
+                
+                # Display Keputusan as a numbered paragraph
+                if keputusan:
+                    story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {keputusan}", self.styles['MOM_Normal']))
+        elif agenda3 and agenda3.get("Keterangan"):
+            self.add_numbered_paragraphs(story, agenda3.get("Keterangan", ""))
+        else:
+            story.append(Paragraph(f"{self.get_next_num()}. Tiada", self.styles['MOM_Normal']))
 
 
         # 4. Financial Report / Agenda 4
