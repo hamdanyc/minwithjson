@@ -5,7 +5,7 @@ import base64
 import pandas as pd
 from mom_logic import initialize_mom_state, ingest_previous_mom, save_mom_to_json
 from generate_mom_reportlab import MOMReportLab
-from llm_helper import generate_chairman_note, generate_closing_remark, summarize_financial_report
+from llm_helper import generate_chairman_note, generate_closing_remark, generate_new_matter, summarize_financial_report
 
 st.set_page_config(page_title="MOM Crafter", layout="wide")
 
@@ -339,6 +339,44 @@ elif current_stage == 5: # New Matters
             nm_df[col] = ""
     
     st.write("Tip: To delete a row, select it using the checkbox on the left and press 'Delete' on your keyboard.")
+    
+    # LLM Point-based Input for New Matters
+    with st.expander("✨ Generate New Matter from Points (LLM)", expanded=False):
+        nm_title = st.text_input("Title (Perkara) for LLM Draft", placeholder="e.g., Cadangan Pembelian Peralatan ICT")
+        nm_points_input = st.text_area(
+            "Points (Markdown List)",
+            placeholder="- Membeli 2 unit laptop untuk kegunaan pejabat\n- Anggaran kos RM 8,000\n- Kelulusan diperlukan daripada jawatankuasa",
+            height=150,
+            help="Enter each point on a new line."
+        )
+            
+        if st.button("🪄 Generate and Add to New Matters"):
+             if not nm_points_input.strip() or not nm_title.strip():
+                st.warning("Please enter both a title and at least one point.")
+             else:
+                with st.spinner("Generating..."):
+                    nm_points_list = [line.strip() for line in nm_points_input.split('\n') if line.strip()]
+                    generated_nm = generate_new_matter(nm_points_list)
+                    if generated_nm.startswith("Error:"):
+                        st.error(generated_nm)
+                    elif not generated_nm:
+                        st.error("The LLM returned empty content. Please try again.")
+                    else:
+                        # Ensure NewMatters list exists
+                        if "NewMatters" not in st.session_state.mom_data:
+                            st.session_state.mom_data["NewMatters"] = []
+                        
+                        # Append to session state
+                        new_item = {"Perkara": nm_title, "Keterangan": generated_nm, "Keputusan": ""}
+                        st.session_state.mom_data["NewMatters"].append(new_item)
+                        
+                        # Clear editor state to force refresh
+                        if "nm_editor_stable" in st.session_state:
+                            del st.session_state["nm_editor_stable"]
+                        
+                        st.success(f"Added '{nm_title}' to New Matters!")
+                        st.rerun()
+
     edited_nm = st.data_editor(nm_df, num_rows="dynamic", use_container_width=True, 
                                column_config={
                                    "Perkara": st.column_config.TextColumn("Perkara", width="medium"),

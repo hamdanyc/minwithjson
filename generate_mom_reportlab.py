@@ -214,33 +214,19 @@ class MOMReportLab:
             story.append(Paragraph(f"AGENDA 3: {title}", self.styles['MOM_SectionHeader']))
             
             if ma:
-                for item in ma:
                     num = self.get_next_num()
                     perkara = item.get("Perkara", "")
                     keterangan = item.get("Keterangan", "")
                     keputusan = item.get("Keputusan", "")
                     
 
-                    # Merge Perkara and Keterangan
-                    # Handle Multi-paragraph Keterangan with "@." separator
-                    parts = re.split(r'@\.\s*', keterangan)
-                    parts = [p.strip() for p in parts if p.strip()]
-
-                    if not parts:
-                         combined_text = f"<b>{num}. {perkara}</b>"
-                         self.add_content_with_tables(story, combined_text)
+                    # Unified rendering for multi-paragraph and sub-lists
+                    if keterangan.strip().startswith('|'):
+                         prefix = f"<b>{num}. {perkara}</b>.\n"
                     else:
-                        first_part = parts[0]
-                        if first_part.strip().startswith('|'):
-                             combined_text = f"<b>{num}. {perkara}</b>.\n{first_part}"
-                        else:
-                             combined_text = f"<b>{num}. {perkara}</b>. {first_part}" if first_part else f"<b>{num}. {perkara}</b>"
-                        
-                        self.add_content_with_tables(story, combined_text)
-                        
-                        # Render subsequent paragraphs
-                        for extra_part in parts[1:]:
-                             self.add_content_with_tables(story, f"{self.get_next_num()}. {extra_part}")
+                         prefix = f"<b>{num}. {perkara}</b>. " if perkara else f"<b>{num}. </b>"
+                    
+                    self.render_numbered_content(story, keterangan, first_prefix=prefix)
                     
                     # Display Keputusan as a numbered paragraph
                     if keputusan:
@@ -308,26 +294,13 @@ class MOMReportLab:
                     keputusan = item.get("Keputusan", "")
                     
 
-                    # Merge Perkara and Keterangan
-                    # Handle Multi-paragraph Keterangan with "@." separator
-                    parts = re.split(r'@\.\s*', keterangan)
-                    parts = [p.strip() for p in parts if p.strip()]
-
-                    if not parts:
-                         combined_text = f"<b>{num}. {perkara}</b>"
-                         self.add_content_with_tables(story, combined_text)
+                    # Unified rendering for multi-paragraph and sub-lists
+                    if keterangan.strip().startswith('|'):
+                        prefix = f"<b>{num}. {perkara}</b>.\n"
                     else:
-                        first_part = parts[0]
-                        if first_part.strip().startswith('|'):
-                             combined_text = f"<b>{num}. {perkara}</b>.\n{first_part}"
-                        else:
-                             combined_text = f"<b>{num}. {perkara}</b>. {first_part}" if first_part else f"<b>{num}. {perkara}</b>"
-                        
-                        self.add_content_with_tables(story, combined_text)
-                        
-                        # Render subsequent paragraphs
-                        for extra_part in parts[1:]:
-                             self.add_content_with_tables(story, f"{self.get_next_num()}. {extra_part}")
+                        prefix = f"<b>{num}. {perkara}</b>. " if perkara else f"<b>{num}. </b>"
+                    
+                    self.render_numbered_content(story, keterangan, first_prefix=prefix)
                     
                     if keputusan:
                         story.append(Paragraph(f"{self.get_next_num()}. Keputusan: {markdown_to_reportlab(keputusan)}", self.styles['MOM_Normal']))
@@ -398,24 +371,40 @@ class MOMReportLab:
         return self.output_pdf
 
     def add_numbered_paragraphs(self, story, content):
-        if not content: return
-        
-        # Split by "@." or explicitly numbered paragraphs
+        self.render_numbered_content(story, content)
+
+    def render_numbered_content(self, story, content, first_prefix=None):
+        if not content:
+            if first_prefix:
+                self.add_content_with_tables(story, first_prefix)
+            return
+            
         parts = re.split(r'@\.\s*', content)
         parts = [p.strip() for p in parts if p.strip()]
         
-        for part in parts:
-            # Check for sub-lists (a., b., c.)
+        if not parts and first_prefix:
+             self.add_content_with_tables(story, first_prefix)
+             return
+
+        for idx, part in enumerate(parts):
+            # Split for sub-lists (a., b., c.)
             sub_parts = re.split(r'(?:\n|^)\s*([a-z]\.)\s+', part)
-            if len(sub_parts) > 1:
-                # First part is the lead-in
-                self.add_content_with_tables(story, f"{self.get_next_num()}. {sub_parts[0]}")
-                for i in range(1, len(sub_parts), 2):
-                    marker = sub_parts[i]
-                    text = sub_parts[i+1]
-                    self.add_content_with_tables(story, f"&nbsp;&nbsp;&nbsp;&nbsp;{marker} {text}")
+            lead_in = sub_parts[0]
+            
+            if idx == 0 and first_prefix:
+                # Use provided prefix for the first paragraph
+                self.add_content_with_tables(story, f"{first_prefix}{lead_in}")
             else:
-                self.add_content_with_tables(story, f"{self.get_next_num()}. {part}")
+                # Use a new number for subsequent paragraphs
+                num = self.get_next_num()
+                self.add_content_with_tables(story, f"{num}. {lead_in}")
+            
+            # Render sub-items if present
+            for i in range(1, len(sub_parts), 2):
+                marker = sub_parts[i]
+                text = sub_parts[i+1]
+                # Indent sub-items
+                self.add_content_with_tables(story, f"&nbsp;&nbsp;&nbsp;&nbsp;{marker} {text}")
 
     def add_content_with_tables(self, story, text, style_name='MOM_Normal'):
         lines = text.split('\n')

@@ -105,9 +105,6 @@ The output should be a single paragraph. Do not include any other text or format
         return completion.choices[0].message.content.strip()
 
     except Exception as e:
-        return completion.choices[0].message.content.strip()
-
-    except Exception as e:
         return f"Error during generation: {str(e)}"
 
 def summarize_financial_report(pdf_file):
@@ -175,3 +172,56 @@ Extracted Text:
 
     except Exception as e:
         return f"Error during summarization: {str(e)}"
+
+def generate_new_matter(points):
+    """
+    Generates a professional paragraph for a new agenda item from a list of points.
+    """
+    if not points or all(not p.strip() for p in points):
+        return ""
+
+    try:
+        # Retrieve API key
+        import os
+        api_key = None
+        try:
+            api_key = st.secrets.get("GROQ_API_KEY")
+        except FileNotFoundError:
+            pass
+        
+        if not api_key:
+            api_key = os.environ.get("GROQ_API_KEY")
+            
+        if not api_key:
+            return "Error: GROQ_API_KEY not found."
+
+        client = Groq(api_key=api_key)
+        
+        # Filter out empty points
+        valid_points = [p.strip() for p in points if p.strip()]
+        points_str = "\n".join([f"- {p}" for p in valid_points])
+
+        prompt = f"""
+You are an expert secretary drafting minutes of a meeting. 
+Based on the following points, generate a professional, detailed, and concise paragraph for a new agenda item in Malay (Bahasa Melayu), as per the standard format for formal minutes of meeting in Malaysia.
+
+Points:
+{points_str}
+
+The output should be a single paragraph describing the discussion or decision. Do not include any other text or formatting.
+"""
+
+        completion = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": "You are a professional secretary crafting meeting minutes."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+
+        return completion.choices[0].message.content.strip()
+
+    except Exception as e:
+        return f"Error during generation: {str(e)}"
