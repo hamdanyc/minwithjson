@@ -318,7 +318,7 @@ class MOMReportLab:
         story.append(Spacer(1, 20))
         
         # Prepare signature images
-        prep_sig_path = 'Kol_Hamdan.png'
+        prep_sig_path = 'mej_tg_nazri.png'
         appr_sig_path = 'dsaa_sign.png'
         
         def get_sig_img(path):
